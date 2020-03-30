@@ -226,6 +226,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>)
 		reward_proportion,
 	} = params.clone();
 
+	sp_runtime::print("staking->slashing->compute_slash-1");
+
 	let mut reward_payout = Zero::zero();
 	let mut val_slashed = Zero::zero();
 
@@ -237,6 +239,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>)
 		kick_out_if_recent::<T>(params);
 		return None;
 	}
+
+	sp_runtime::print("staking->slashing->compute_slash-2");
 
 	let (prior_slash_p, _era_slash) = <Module<T> as Store>::ValidatorSlashInEra::get(
 		&slash_era,
@@ -262,6 +266,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>)
 		return None;
 	}
 
+	sp_runtime::print("staking->slashing->compute_slash-3");
+
 	// apply slash to validator.
 	{
 		let mut spans = fetch_spans::<T>(
@@ -278,6 +284,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>)
 		);
 
 		if target_span == Some(spans.span_index()) {
+			sp_runtime::print("staking->slashing->compute_slash-4");
+
 			// misbehavior occurred within the current slashing span - take appropriate
 			// actions.
 
@@ -288,6 +296,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>)
 
 			// make sure to disable validator till the end of this session
 			if T::SessionInterface::disable_validator(stash).unwrap_or(false) {
+				sp_runtime::print("staking->slashing->compute_slash-5");
+
 				// force a new era, to select a new validator set
 				<Module<T>>::ensure_new_era()
 			}
@@ -296,6 +306,8 @@ pub(crate) fn compute_slash<T: Trait>(params: SlashParams<T>)
 
 	let mut nominators_slashed = Vec::new();
 	reward_payout += slash_nominators::<T>(params, prior_slash_p, &mut nominators_slashed);
+
+	sp_runtime::print("staking->slashing->compute_slash-6");
 
 	Some(UnappliedSlash {
 		validator: stash.clone(),
@@ -579,14 +591,20 @@ pub fn do_slash<T: Trait>(
 		Some(c) => c,
 	};
 
+	sp_runtime::print("staking->slashing->do_slash-2");
+
 	let mut ledger = match <Module<T>>::ledger(&controller) {
 		Some(ledger) => ledger,
 		None => return, // nothing to do.
 	};
 
+	sp_runtime::print("staking->slashing->do_slash-3");
+
 	let value = ledger.slash(value, T::Currency::minimum_balance());
 
 	if !value.is_zero() {
+		sp_runtime::print("staking->slashing->do_slash-4");
+
 		let (imbalance, missing) = T::Currency::slash(stash, value);
 		slashed_imbalance.subsume(imbalance);
 
@@ -597,10 +615,14 @@ pub fn do_slash<T: Trait>(
 
 		<Module<T>>::update_ledger(&controller, &ledger);
 
+		sp_runtime::print("staking->slashing->do_slash-5");
+
 		// trigger the event
 		<Module<T>>::deposit_event(
 			super::RawEvent::Slash(stash.clone(), value)
 		);
+
+		sp_runtime::print("staking->slashing->do_slash-6");
 	}
 }
 
@@ -609,6 +631,8 @@ pub(crate) fn apply_slash<T: Trait>(unapplied_slash: UnappliedSlash<T::AccountId
 	let mut slashed_imbalance = NegativeImbalanceOf::<T>::zero();
 	let mut reward_payout = unapplied_slash.payout;
 
+	sp_runtime::print("staking->slashing->apply_slash-1");
+
 	do_slash::<T>(
 		&unapplied_slash.validator,
 		unapplied_slash.own,
@@ -616,7 +640,11 @@ pub(crate) fn apply_slash<T: Trait>(unapplied_slash: UnappliedSlash<T::AccountId
 		&mut slashed_imbalance,
 	);
 
+	sp_runtime::print("staking->slashing->apply_slash-2");
+
 	for &(ref nominator, nominator_slash) in &unapplied_slash.others {
+		sp_runtime::print("staking->slashing->apply_slash-3");
+
 		do_slash::<T>(
 			&nominator,
 			nominator_slash,
@@ -624,6 +652,8 @@ pub(crate) fn apply_slash<T: Trait>(unapplied_slash: UnappliedSlash<T::AccountId
 			&mut slashed_imbalance,
 		);
 	}
+
+	sp_runtime::print("staking->slashing->apply_slash-4");
 
 	pay_reporters::<T>(reward_payout, slashed_imbalance, &unapplied_slash.reporters);
 }
