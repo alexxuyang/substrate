@@ -464,7 +464,7 @@ impl<AccountId, Balance> StakingLedger<AccountId, Balance> where
 		mut value: Balance,
 		minimum_balance: Balance,
 	) -> Balance {
-		sp_runtime::print("staking->lib->StakingLedger->slash-1");
+		println!("staking->lib->StakingLedger->slash-1");
 
 		let pre_total = self.total;
 		let total = &mut self.total;
@@ -504,7 +504,7 @@ impl<AccountId, Balance> StakingLedger<AccountId, Balance> where
 		// kill all drained chunks.
 		let _ = self.unlocking.drain(..i);
 
-		sp_runtime::print("staking->lib->StakingLedger->slash-2");
+		println!("staking->lib->StakingLedger->slash-2");
 
 		pre_total.saturating_sub(*total)
 	}
@@ -1668,7 +1668,7 @@ impl<T: Trait> Module<T> {
 
 	/// Start a session potentially starting an era.
 	fn start_session(start_session: SessionIndex) {
-		sp_runtime::print("staking->lib->start_session-1");
+		println!("staking->lib->start_session-1");
 
 		let next_active_era = Self::active_era().map(|e| e.index + 1).unwrap_or(0);
 		if let Some(next_active_era_start_session_index) =
@@ -1687,7 +1687,7 @@ impl<T: Trait> Module<T> {
 
 	/// End a session potentially ending an era.
 	fn end_session(session_index: SessionIndex) {
-		sp_runtime::print("staking->lib->end_session-1");
+		println!("staking->lib->end_session-1");
 
 		if let Some(active_era) = Self::active_era() {
 			if let Some(next_active_era_start_session_index) =
@@ -1704,7 +1704,7 @@ impl<T: Trait> Module<T> {
 	/// * reset `active_era.start`,
 	/// * update `BondedEras` and apply slashes.
 	fn start_era(start_session: SessionIndex) {
-		sp_runtime::print("staking->lib->start_era-1");
+		println!("staking->lib->start_era-1");
 
 		let active_era = <ActiveEra<T>>::mutate(|active_era| {
 			let new_index = active_era.as_ref().map(|info| info.index + 1).unwrap_or(0);
@@ -1740,7 +1740,7 @@ impl<T: Trait> Module<T> {
 			}
 		});
 
-		sp_runtime::print("staking->lib->start_era-2");
+		println!("staking->lib->start_era-2");
 
 		Self::apply_unapplied_slashes(active_era);
 	}
@@ -1749,7 +1749,7 @@ impl<T: Trait> Module<T> {
 	fn end_era(active_era: ActiveEraInfo<MomentOf<T>>, _session_index: SessionIndex) {
 		// Note: active_era_start can be None if end era is called during genesis config.
 		if let Some(active_era_start) = active_era.start {
-			sp_runtime::print("staking->lib->end_era-1");
+			println!("staking->lib->end_era-1");
 
 			let now = T::Time::now();
 
@@ -1769,7 +1769,7 @@ impl<T: Trait> Module<T> {
 
 	/// Plan a new era. Return the potential new staking set.
 	fn new_era(start_session_index: SessionIndex) -> Option<Vec<T::AccountId>> {
-		sp_runtime::print("staking->lib->new_era-1");
+		println!("staking->lib->new_era-1");
 
 		// Increment or set current era.
 		let current_era = CurrentEra::mutate(|s| {
@@ -1802,19 +1802,19 @@ impl<T: Trait> Module<T> {
 
 	/// Apply previously-unapplied slashes on the beginning of a new era, after a delay.
 	fn apply_unapplied_slashes(active_era: EraIndex) {
-		sp_runtime::print("staking->lib->apply_unapplied_slashes-1");
+		println!("staking->lib->apply_unapplied_slashes-1");
 
 		let slash_defer_duration = T::SlashDeferDuration::get();
 		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| if let Some(ref mut earliest) = earliest {
-			sp_runtime::print("staking->lib->apply_unapplied_slashes-2");
+			println!("staking->lib->apply_unapplied_slashes-2");
 
 			let keep_from = active_era.saturating_sub(slash_defer_duration);
 			for era in (*earliest)..keep_from {
-				sp_runtime::print("staking->lib->apply_unapplied_slashes-3");
+				println!("staking->lib->apply_unapplied_slashes-3");
 
 				let era_slashes = <Self as Store>::UnappliedSlashes::take(&era);
 				for slash in era_slashes {
-					sp_runtime::print("staking->lib->apply_unapplied_slashes-4");
+					println!("staking->lib->apply_unapplied_slashes-4");
 
 					slashing::apply_slash::<T>(slash);
 				}
@@ -2028,7 +2028,7 @@ impl<T: Trait> SessionManager<T::AccountId, Exposure<T::AccountId, BalanceOf<T>>
 	fn new_session(new_index: SessionIndex)
 		-> Option<Vec<(T::AccountId, Exposure<T::AccountId, BalanceOf<T>>)>>
 	{
-		sp_runtime::print("staking->lib->new_session-1");
+		println!("staking->lib->new_session-1");
 
 		<Self as pallet_session::SessionManager<_>>::new_session(new_index).map(|validators| {
 			let current_era = Self::current_era()
@@ -2042,12 +2042,12 @@ impl<T: Trait> SessionManager<T::AccountId, Exposure<T::AccountId, BalanceOf<T>>
 		})
 	}
 	fn start_session(start_index: SessionIndex) {
-		sp_runtime::print("staking->lib->start_session-1");
+		println!("staking->lib->start_session-1");
 
 		<Self as pallet_session::SessionManager<_>>::start_session(start_index)
 	}
 	fn end_session(end_index: SessionIndex) {
-		sp_runtime::print("staking->lib->end_session-1");
+		println!("staking->lib->end_session-1");
 
 		<Self as pallet_session::SessionManager<_>>::end_session(end_index)
 	}
@@ -2117,7 +2117,7 @@ impl <T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Ident
 		slash_fraction: &[Perbill],
 		slash_session: SessionIndex,
 	) {
-		sp_runtime::print("staking->lib->on_offence-1");
+		println!("staking->lib->on_offence-1");
 
 		let reward_proportion = SlashRewardFraction::get();
 
@@ -2128,7 +2128,7 @@ impl <T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Ident
 			}
 			active_era.unwrap().index
 		};
-		sp_runtime::print("staking->lib->on_offence-2");
+		println!("staking->lib->on_offence-2");
 
 		let active_era_start_session_index = Self::eras_start_session_index(active_era)
 			.unwrap_or_else(|| {
@@ -2152,7 +2152,7 @@ impl <T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Ident
 			}
 		};
 
-		sp_runtime::print("staking->lib->on_offence-3");
+		println!("staking->lib->on_offence-3");
 
 		<Self as Store>::EarliestUnappliedSlash::mutate(|earliest| {
 			if earliest.is_none() {
@@ -2162,10 +2162,10 @@ impl <T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Ident
 
 		let slash_defer_duration = T::SlashDeferDuration::get();
 
-		sp_runtime::print("staking->lib->on_offence-4");
+		println!("staking->lib->on_offence-4");
 
 		for (details, slash_fraction) in offenders.iter().zip(slash_fraction) {
-			sp_runtime::print("staking->lib->on_offence-5");
+			println!("staking->lib->on_offence-5");
 
 			let stash = &details.offender.0;
 			let exposure = &details.offender.1;
@@ -2185,19 +2185,19 @@ impl <T: Trait> OnOffenceHandler<T::AccountId, pallet_session::historical::Ident
 				reward_proportion,
 			});
 
-			sp_runtime::print("staking->lib->on_offence-6");
+			println!("staking->lib->on_offence-6");
 
 			if let Some(mut unapplied) = unapplied {
-				sp_runtime::print("staking->lib->on_offence-7");
+				println!("staking->lib->on_offence-7");
 
 				unapplied.reporters = details.reporters.clone();
 				if slash_defer_duration == 0 {
-					sp_runtime::print("staking->lib->on_offence-8");
+					println!("staking->lib->on_offence-8");
 
 					// apply right away.
 					slashing::apply_slash::<T>(unapplied);
 				} else {
-					sp_runtime::print("staking->lib->on_offence-9");
+					println!("staking->lib->on_offence-9");
 
 					// defer to end of some `slash_defer_duration` from now.
 					<Self as Store>::UnappliedSlashes::mutate(
