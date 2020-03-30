@@ -572,7 +572,7 @@ pub fn do_slash<T: Trait>(
 	reward_payout: &mut BalanceOf<T>,
 	slashed_imbalance: &mut NegativeImbalanceOf<T>,
 ) {
-	sp_runtime("staking->slashing->do_slash-1");
+	sp_runtime::print("staking->slashing->do_slash-1");
 
 	let controller = match <Module<T>>::bonded(stash) {
 		None => return, // defensive: should always exist.
