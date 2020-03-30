@@ -104,6 +104,7 @@ use sp_runtime::{
 	}
 };
 use frame_support::weights::SimpleDispatchInfo;
+use frame_support::debug;
 use frame_system::ensure_none;
 use sp_timestamp::{
 	InherentError, INHERENT_IDENTIFIER, InherentType,
@@ -146,6 +147,9 @@ decl_module! {
 		#[weight = SimpleDispatchInfo::FixedOperational(10_000)]
 		fn set(origin, #[compact] now: T::Moment) {
 			ensure_none(origin)?;
+			
+			debug::info!(target: "timestamp", "11111111111111111111111111111111111111");
+
 			assert!(!<Self as Store>::DidUpdate::exists(), "Timestamp must be updated only once in the block");
 			assert!(
 				Self::now().is_zero() || now >= Self::now() + T::MinimumPeriod::get(),
