@@ -504,9 +504,9 @@ impl<AccountId, Balance> StakingLedger<AccountId, Balance> where
 		// kill all drained chunks.
 		let _ = self.unlocking.drain(..i);
 
-		pre_total.saturating_sub(*total)
-
 		sp_runtime::print("staking->lib->StakingLedger->slash-2");
+
+		pre_total.saturating_sub(*total)
 	}
 }
 
