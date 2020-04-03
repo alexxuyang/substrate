@@ -465,6 +465,8 @@ impl RunCmd {
 		info!("Node name: {}", config.name);
 		info!("Roles: {}", config.display_role());
 
+		info!("Test msg-output line~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
 		match config.roles {
 			Roles::LIGHT => run_service_until_exit(
 				config,
