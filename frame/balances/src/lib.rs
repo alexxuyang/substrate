@@ -162,7 +162,7 @@ use sp_std::prelude::*;
 use sp_std::{cmp, result, mem, fmt::Debug, ops::BitOr, convert::Infallible};
 use codec::{Codec, Encode, Decode};
 use frame_support::{
-	StorageValue, Parameter, decl_event, decl_storage, decl_module, decl_error, ensure, debug,
+	StorageValue, Parameter, decl_event, decl_storage, decl_module, decl_error, ensure,
 	weights::SimpleDispatchInfo, traits::{
 		Currency, OnKilledAccount, OnUnbalanced, TryDrop, StoredMap,
 		WithdrawReason, WithdrawReasons, LockIdentifier, LockableCurrency, ExistenceRequirement,
@@ -170,6 +170,8 @@ use frame_support::{
 		ExistenceRequirement::AllowDeath, IsDeadAccount, BalanceStatus as Status,
 	}
 };
+use frame_support::debug::{self, native};
+
 use sp_runtime::{
 	RuntimeDebug, DispatchResult, DispatchError,
 	traits::{
