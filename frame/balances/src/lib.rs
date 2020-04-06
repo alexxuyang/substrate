@@ -162,7 +162,7 @@ use sp_std::prelude::*;
 use sp_std::{cmp, result, mem, fmt::Debug, ops::BitOr, convert::Infallible};
 use codec::{Codec, Encode, Decode};
 use frame_support::{
-	StorageValue, Parameter, decl_event, decl_storage, decl_module, decl_error, ensure,
+	StorageValue, Parameter, decl_event, decl_storage, decl_module, decl_error, ensure, debug,
 	weights::SimpleDispatchInfo, traits::{
 		Currency, OnKilledAccount, OnUnbalanced, TryDrop, StoredMap,
 		WithdrawReason, WithdrawReasons, LockIdentifier, LockableCurrency, ExistenceRequirement,
@@ -300,7 +300,7 @@ pub struct BalanceLock<Balance> {
 	pub reasons: Reasons,
 }
 
-/// All balance information for an account.
+/// All balance rmation for an account.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug)]
 pub struct AccountData<Balance> {
 	/// Non-reserved part of the balance. There may still be restrictions on this, but it is the
@@ -946,6 +946,10 @@ impl<T: Trait<I>, I: Instance> Currency<T::AccountId> for Module<T, I> where
 		value: Self::Balance,
 		existence_requirement: ExistenceRequirement,
 	) -> DispatchResult {
+		debug::RuntimeLogger::init();
+		native::info!("[balances-info] 1111111111111111111111");
+		native::print!("[balances-print] 1111111111111111111111");
+
 		if value.is_zero() || transactor == dest { return Ok(()) }
 
 		Self::try_mutate_account(dest, |to_account| -> DispatchResult {
